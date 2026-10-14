@@ -37,7 +37,7 @@ export default function Cadastro() {
           titulo="Enviar dados"
           onPress={() => {
             entrar('responsavel');
-            router.replace('/boas-vindas');
+            router.replace({ pathname: '/pin-novo', params: { origem: 'cadastro' } });
           }}
         />
       }>

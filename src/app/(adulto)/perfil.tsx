@@ -76,6 +76,7 @@ export default function Perfil() {
 
       <Cartao estilo={{ padding: 4, gap: 0 }}>
         <Linha icone="home-outline" titulo="Hábitos da casa" sub={`${app.habitos.length} hábitos · tocar para editar a ordem`} onPress={() => router.push('/habitos')} fundo="#DFF7EF" tinta="#0D6650" />
+        <Linha icone="keypad-outline" titulo="PIN dos adultos" sub={app.pin ? 'Trocar o PIN' : 'Ainda não criado · tocar para criar'} onPress={() => router.push({ pathname: '/pin-novo', params: { origem: 'trocar' } })} fundo="#F1EAFE" tinta="#5B2DB8" />
       </Cartao>
 
       <Cartao estilo={{ gap: 0 }}>

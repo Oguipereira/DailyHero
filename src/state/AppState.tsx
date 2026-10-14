@@ -34,6 +34,8 @@ type Estado = {
   sentimento: Sentimento | null;
   profissionalAprovado: boolean | null;
   registros: Registro[];
+  /** PIN da área dos adultos. null = ainda não foi criado. */
+  pin: string | null;
 };
 
 type Acoes = {
@@ -46,6 +48,7 @@ type Acoes = {
   concluirLicao: (s: Sentimento | null) => void;
   reiniciarLicao: () => void;
   decidirProfissional: (aprovado: boolean | null) => void;
+  definirPin: (pin: string) => void;
 };
 
 const inicial: Estado = {
@@ -62,6 +65,7 @@ const inicial: Estado = {
   sentimento: null,
   profissionalAprovado: null,
   registros: [],
+  pin: null,
 };
 
 const Contexto = createContext<(Estado & Acoes) | null>(null);
@@ -88,6 +92,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         })),
       reiniciarLicao: () => setE((s) => ({ ...s, tarefaAtual: 0, jogoAtual: 0 })),
       decidirProfissional: (profissionalAprovado) => setE((s) => ({ ...s, profissionalAprovado })),
+      definirPin: (pin) => setE((s) => ({ ...s, pin })),
     }),
     [],
   );

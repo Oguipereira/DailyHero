@@ -41,6 +41,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" />
         <Stack.Screen name="crianca" options={{ gestureEnabled: false }} />
         <Stack.Screen name="pin" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="pin-novo" options={{ gestureEnabled: false }} />
         <Stack.Screen name="licao" options={{ gestureEnabled: false }} />
         <Stack.Screen name="(adulto)" options={{ gestureEnabled: false }} />
       </Stack>
