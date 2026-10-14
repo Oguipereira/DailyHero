@@ -7,9 +7,19 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { AppStateProvider } from '@/state/AppState';
+
 // Segura a tela de abertura até as fontes carregarem, pra nada aparecer com a fonte errada.
 SplashScreen.preventAutoHideAsync();
 
+/**
+ * Mapa do app:
+ * - index (abertura) → login / cadastro → boas-vindas → hábitos → crianca
+ * - crianca: o modo criança, onde o app abre no dia a dia (só o PLAY)
+ * - licao/*: a lição trancada (casa, tarefas e jogos)
+ * - pin → (adulto)/*: área dos adultos com 5 abas
+ * - prof/*: telas do profissional
+ */
 export default function RootLayout() {
   const [fontesProntas] = useFonts({
     Fredoka_600SemiBold,
@@ -25,15 +35,15 @@ export default function RootLayout() {
   if (!fontesProntas) return null;
 
   return (
-    <>
+    <AppStateProvider>
       <StatusBar style="auto" />
-      {/* O app abre no modo criança (index). A área dos adultos fica atrás do PIN. */}
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="pin" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="(adulto)" />
+        <Stack.Screen name="crianca" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="pin" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
         <Stack.Screen name="licao" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="(adulto)" options={{ gestureEnabled: false }} />
       </Stack>
-    </>
+    </AppStateProvider>
   );
 }

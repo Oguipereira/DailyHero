@@ -1,51 +1,41 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BotaoPlay } from '@/components/BotaoPlay';
-import { cores, espaco, fontes, TOQUE_MINIMO } from '@/theme/tokens';
+import { LogoGirando } from '@/components/Logo';
+import { useApp } from '@/state/AppState';
+import { cores, fontes } from '@/theme/tokens';
 
-/**
- * Modo criança: é onde o app abre.
- * A criança só vê o PLAY. O cadeado no canto leva ao PIN da área dos adultos.
- */
-export default function ModoCrianca() {
+/** Abertura: o logo entra girando. Toque para entrar. */
+export default function Abertura() {
+  const { logado } = useApp();
+  const [pronto, setPronto] = useState(false);
+
+  function entrar() {
+    router.replace(logado ? '/crianca' : '/login');
+  }
+
   return (
     <SafeAreaView style={styles.raiz}>
-      <View style={styles.topo}>
-        <Pressable
-          onPress={() => router.push('/pin')}
-          accessibilityRole="button"
-          accessibilityLabel="Área dos adultos"
-          style={styles.cadeado}>
-          <Ionicons name="lock-closed" size={20} color="#8E89C9" />
-        </Pressable>
-      </View>
-
-      <Text style={styles.ola}>Oi, [Nome]!</Text>
-
-      {/* TODO fase 3: herói em pixel art e ofensiva da semana */}
-      <View style={styles.meio} />
-
-      <BotaoPlay onPress={() => router.push('/licao')} />
-      <Text style={styles.hoje}>Hoje: 7 tarefas da casa e 3 jogos</Text>
+      <Pressable style={styles.area} onPress={entrar} accessibilityRole="button" accessibilityLabel="Entrar no Daily Hero">
+        <LogoGirando tamanho={230} aoTerminar={() => setPronto(true)} />
+        <View style={{ alignItems: 'center', gap: 6, opacity: pronto ? 1 : 0 }}>
+          <Text style={styles.nome}>
+            Daily <Text style={{ color: cores.primaria }}>Hero</Text>
+          </Text>
+          <Text style={styles.lema}>Um pouquinho todo dia</Text>
+        </View>
+      </Pressable>
+      <Text style={[styles.toque, { opacity: pronto ? 1 : 0 }]}>Toque para entrar</Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  raiz: { flex: 1, backgroundColor: cores.licaoFundo, padding: espaco.xl, gap: espaco.l },
-  topo: { alignItems: 'flex-end' },
-  cadeado: {
-    width: TOQUE_MINIMO,
-    height: TOQUE_MINIMO,
-    borderRadius: TOQUE_MINIMO / 2,
-    backgroundColor: cores.licaoSuperficie,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  ola: { fontFamily: fontes.pixel, fontSize: 34, color: '#FFFFFF', textAlign: 'center' },
-  meio: { flex: 1 },
-  hoje: { fontFamily: fontes.texto, fontSize: 15, color: cores.licaoTextoSuave, textAlign: 'center' },
+  raiz: { flex: 1, backgroundColor: '#FFFFFF' },
+  area: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 28 },
+  nome: { fontFamily: fontes.titulo, fontSize: 40, color: cores.texto },
+  lema: { fontFamily: fontes.textoForte, fontSize: 17, color: cores.textoSuave },
+  toque: { textAlign: 'center', fontFamily: fontes.textoForte, fontSize: 15, color: cores.textoSuave, paddingBottom: 32 },
 });

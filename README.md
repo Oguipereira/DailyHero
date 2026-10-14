@@ -2,7 +2,7 @@
 
 App para crianças de 4 a 10 anos, incluindo crianças autistas (leve, moderado e não verbais), que une criação de hábitos, estímulos cognitivos e acompanhamento por pais e profissionais.
 
-Versão atual: **0.1.0 (fase 0, base do projeto)**.
+Versão atual: **0.2.0 (fase 1, todas as telas navegáveis com dados de exemplo)**.
 
 ## Como rodar no seu celular (Windows)
 
@@ -74,11 +74,23 @@ docs/
 
 | Fase | O que entra | Status |
 |---|---|---|
-| 0 | Projeto, cores e fontes do canvas, telas navegáveis vazias | em andamento |
-| 1 | Telas do canvas montadas, ainda sem banco de dados | |
+| 0 | Projeto, cores e fontes do canvas, telas navegáveis vazias | pronta |
+| 1 | Telas do canvas montadas, ainda sem banco de dados | pronta |
 | 2 | Login, cadastro, PIN e hábitos salvos de verdade (Supabase) | |
 | 3 | Lição: casa, tarefas com animação e os 3 jogos, coletando os dados | |
 | 4 | Relatórios e a parte do profissional | |
 | 5 | Teste fechado com famílias reais | |
 
 O design de referência de todas as telas está no canvas do Daily Hero.
+
+## Como navegar na fase 1
+
+Os dados ainda são de exemplo e ficam só na memória: fechar o app zera tudo.
+
+- **Criança:** abertura → Entrar → tela do Theo → **PLAY** → casa com as tarefas → jogos → como você se sentiu.
+  Para sair da lição no meio, segure o **X** por 3 segundos.
+- **Adultos:** na tela do Theo, toque no cadeado → digite **qualquer PIN de 4 dígitos** → abas Início, Jogos, Relatórios, Falar e Perfil.
+- **Profissional:** no login, escolha **Profissional** → Entrar → painel de pacientes → Trilha.
+- **Telas de teste:** em Perfil, no fim da página, há atalhos para a tela de erro, o convite do profissional e a abertura.
+
+Esta fase adicionou o pacote `expo-speech` (a voz da aba Falar). Depois de baixar a atualização, rode `npm install` uma vez.
