@@ -1,56 +1,84 @@
-# Welcome to your Expo app 👋
+# Daily Hero
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App para crianças de 4 a 10 anos, incluindo crianças autistas (leve, moderado e não verbais), que une criação de hábitos, estímulos cognitivos e acompanhamento por pais e profissionais.
 
-## Get started
+Versão atual: **0.1.0 (fase 0, base do projeto)**.
 
-1. Install dependencies
+## Como rodar no seu celular (Windows)
 
-   ```bash
-   npm install
-   ```
+Você só faz a parte 1 uma vez.
 
-2. Start the app
+### 1. Instalar as ferramentas
 
-   ```bash
-   npx expo start
-   ```
+1. **Node.js (versão LTS):** baixe em https://nodejs.org e instale com as opções padrão.
+2. **Git:** baixe em https://git-scm.com/download/win e instale com as opções padrão.
+3. **Expo Go no celular:** instale pela Play Store ou App Store.
 
-In the output, you'll find options to open the app in a
+Para conferir, abra o **PowerShell** e rode:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+node -v
+git --version
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Se aparecerem números de versão, está tudo certo.
 
-### Other setup steps
+### 2. Baixar o projeto
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```powershell
+cd $HOME\Documents
+git clone https://github.com/Oguipereira/DailyHero.git
+cd DailyHero
+npm install
+```
 
-## Learn more
+### 3. Abrir o app
 
-To learn more about developing your project with Expo, look at the following resources:
+```powershell
+npm start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Vai aparecer um **QR code** no terminal.
 
-## Join the community
+- **Android:** abra o Expo Go e toque em "Scan QR code".
+- **iPhone:** abra a câmera e aponte para o QR code.
 
-Join our community of developers creating universal apps.
+O celular e o computador precisam estar **no mesmo Wi-Fi**. Se não abrir, rode `npm start -- --tunnel`.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Cada vez que o código muda, o app atualiza sozinho no celular.
+
+### 4. Pegar as mudanças mais novas
+
+```powershell
+git pull
+npm install
+npm start
+```
+
+## Como o projeto está organizado
+
+```
+src/
+  app/                 telas (cada arquivo é uma tela)
+    index.tsx          modo criança: onde o app abre (só o PLAY)
+    pin.tsx            PIN da área dos adultos
+    licao/             a lição diária (casa + jogos)
+    (adulto)/          área dos adultos, com as 5 abas
+  components/          peças reutilizáveis (botão PLAY, moldura de tela...)
+  theme/tokens.ts      cores, fontes e medidas do canvas
+docs/
+  DECISOES.md          decisões de produto já tomadas
+```
+
+## Plano de fases
+
+| Fase | O que entra | Status |
+|---|---|---|
+| 0 | Projeto, cores e fontes do canvas, telas navegáveis vazias | em andamento |
+| 1 | Telas do canvas montadas, ainda sem banco de dados | |
+| 2 | Login, cadastro, PIN e hábitos salvos de verdade (Supabase) | |
+| 3 | Lição: casa, tarefas com animação e os 3 jogos, coletando os dados | |
+| 4 | Relatórios e a parte do profissional | |
+| 5 | Teste fechado com famílias reais | |
+
+O design de referência de todas as telas está no canvas do Daily Hero.
