@@ -34,7 +34,7 @@ export default function BoasVindas() {
     <SafeAreaView style={styles.raiz}>
       <View style={styles.centro}>
         <Animated.View style={{ opacity: entra, transform: [{ scale }, { translateY }] }}>
-          <Logo tamanho={220} />
+          <Logo tamanho={220} variante="cristal" />
         </Animated.View>
         <Animated.View style={{ opacity: entra, alignItems: 'center', gap: 12 }}>
           <Text style={styles.sobre}>CADASTRO CONCLUÍDO</Text>

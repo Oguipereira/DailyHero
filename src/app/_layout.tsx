@@ -5,12 +5,13 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
 
 import { AppStateProvider } from '@/state/AppState';
 
-// Segura a tela de abertura até as fontes carregarem, pra nada aparecer com a fonte errada.
+// Segura a tela de carregamento (splash) até as fontes e os dados salvos estarem prontos.
+// Quem esconde é o AppStateProvider, quando termina de ler os dados. A splash some com um fade suave.
 SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({ fade: true, duration: 300 });
 
 /**
  * Mapa do app:
@@ -27,10 +28,6 @@ export default function RootLayout() {
     Nunito_800ExtraBold,
     PixelifySans_700Bold,
   });
-
-  useEffect(() => {
-    if (fontesProntas) SplashScreen.hideAsync();
-  }, [fontesProntas]);
 
   if (!fontesProntas) return null;
 

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
+import * as SplashScreen from 'expo-splash-screen';
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import { HABITOS, jogoPorId, type HabitoId, type JogoId } from '@/data/catalogo';
@@ -238,6 +239,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       } finally {
         setCarregado(true);
       }
+      // Só agora a splash sai: a abertura já começa com o logo no mesmo lugar.
+      requestAnimationFrame(() => void SplashScreen.hideAsync().catch(() => {}));
     })();
   }, []);
 

@@ -43,7 +43,7 @@ export default function Erro() {
     <SafeAreaView style={styles.raiz}>
       <View style={styles.centro}>
         <Animated.View style={{ transform: [{ translateY }, { rotate }] }}>
-          <Logo tamanho={230} quebrado />
+          <Logo tamanho={230} variante="quebrado" />
         </Animated.View>
         <Text accessibilityRole="header" style={styles.titulo}>
           Algo se quebrou{'\n'}por aqui
