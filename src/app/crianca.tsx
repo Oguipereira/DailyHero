@@ -35,7 +35,6 @@ export default function ModoCrianca() {
 
   const translateY = pulo.interpolate({ inputRange: [0, 1], outputRange: [0, -8] });
   const hoje = new Date().getDay();
-  const feitosNaSemana = Math.min(hoje + (app.licaoConcluidaHoje ? 1 : 0), 7);
 
   return (
     <SafeAreaView style={styles.raiz}>
@@ -60,7 +59,7 @@ export default function ModoCrianca() {
 
       <View style={styles.ofensiva}>
         <Text style={styles.ofensivaTitulo}>{`${app.ofensiva} dias seguidos!`}</Text>
-        <SemanaOfensiva feitos={feitosNaSemana} hojeIndice={hoje} escuro />
+        <SemanaOfensiva dias={app.semana} hojeIndice={hoje} escuro />
       </View>
 
       <View style={{ flex: 1 }} />

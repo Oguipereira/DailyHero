@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -12,7 +12,7 @@ import { cores, fontes } from '@/theme/tokens';
 export default function Habitos() {
   const app = useApp();
   const [ordem, setOrdem] = useState<HabitoId[]>(app.habitos);
-  const veioDoPerfil = router.canGoBack();
+  const veioDoPerfil = useLocalSearchParams<{ de?: string }>().de === 'perfil';
 
   function alternar(id: HabitoId) {
     setOrdem((o) => (o.includes(id) ? o.filter((x) => x !== id) : [...o, id]));
@@ -32,8 +32,10 @@ export default function Habitos() {
             desativado={ordem.length === 0}
             onPress={() => {
               app.definirHabitos(ordem);
-              if (veioDoPerfil) router.back();
-              else router.replace('/crianca');
+              if (veioDoPerfil) return router.back();
+              // Fim do primeiro acesso: limpa a pilha (login/cadastro) para o "voltar" não levar até lá.
+              if (router.canDismiss()) router.dismissAll();
+              router.replace('/crianca');
             }}
           />
         </>

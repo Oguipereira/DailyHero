@@ -12,7 +12,7 @@ type Props = {
   titulo: string;
   subtitulo: string;
   /** Chamado com os 4 números. Devolva uma mensagem de erro para tremer e limpar, ou nada se deu certo. */
-  aoCompletar: (pin: string) => string | void;
+  aoCompletar: (pin: string) => string | void | Promise<string | void>;
   /** Enquanto for maior que zero, o teclado fica travado com a contagem na tela. */
   travadoSeg?: number;
   /** Muda quando a etapa muda, para limpar os pontos. */
@@ -24,13 +24,14 @@ type Props = {
 export function TecladoPin({ titulo, subtitulo, aoCompletar, travadoSeg = 0, etapa, rodape }: Props) {
   const [pin, setPin] = useState('');
   const [erro, setErro] = useState('');
+  const [ocupado, setOcupado] = useState(false);
   const tremer = useRef(new Animated.Value(0)).current;
   const reduzido = useMovimentoReduzido();
   const travado = travadoSeg > 0;
 
+  // Etapa nova: limpa os pontos (o erro fica até a próxima tecla, para dar tempo de ler).
   useEffect(() => {
     setPin('');
-    setErro('');
   }, [etapa]);
 
   function mostrarErro(msg: string) {
@@ -44,14 +45,16 @@ export function TecladoPin({ titulo, subtitulo, aoCompletar, travadoSeg = 0, eta
   }
 
   function apertar(tecla: string) {
-    if (travado) return;
+    if (travado || ocupado) return;
     if (tecla === 'apagar') return setPin((p) => p.slice(0, -1));
     const novo = (pin + tecla).slice(0, TAMANHO_PIN);
     setPin(novo);
     setErro('');
     if (novo.length === TAMANHO_PIN) {
-      setTimeout(() => {
-        const msg = aoCompletar(novo);
+      setOcupado(true);
+      setTimeout(async () => {
+        const msg = await aoCompletar(novo);
+        setOcupado(false);
         setPin('');
         if (msg) mostrarErro(msg);
       }, 150);

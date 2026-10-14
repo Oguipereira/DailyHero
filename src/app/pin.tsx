@@ -22,8 +22,8 @@ export default function Pin() {
   const [travadoSeg, setTravadoSeg] = useState(0);
 
   useEffect(() => {
-    if (app.pin === null) router.replace({ pathname: '/pin-novo', params: { origem: 'primeiro' } });
-  }, [app.pin]);
+    if (!app.temPin) router.replace({ pathname: '/pin-novo', params: { origem: 'primeiro' } });
+  }, [app.temPin]);
 
   useEffect(() => {
     if (travadoSeg <= 0) return;
@@ -31,8 +31,8 @@ export default function Pin() {
     return () => clearTimeout(t);
   }, [travadoSeg]);
 
-  function conferir(pin: string) {
-    if (pin === app.pin) {
+  async function conferir(pin: string) {
+    if (await app.conferirPin(pin)) {
       router.dismiss();
       router.push('/inicio');
       return;

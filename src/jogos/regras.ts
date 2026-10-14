@@ -1,7 +1,7 @@
 /**
  * Regras dos jogos num lugar só (docs/DECISOES.md).
  * Nível 1 = o mais fácil. Por enquanto toda criança começa no nível 1;
- * na fase 4 o nível passa a subir ou descer conforme o desempenho.
+ * depois o nível sobe ou desce sozinho conforme o desempenho (proximoNivel).
  */
 export const REGRAS = {
   emocoes: { rodadas: 5, opcoesPorNivel: { 1: 2, 2: 3, 3: 3 } },
@@ -29,4 +29,16 @@ export function embaralhar<T>(lista: T[]): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+/**
+ * Nível adaptativo: sobe quando a criança acerta quase tudo de primeira sem ajuda,
+ * desce quando erra muito. Assim o jogo não fica fácil demais nem frustrante.
+ */
+export function proximoNivel(atual: number, r: ResultadoJogo): Nivel {
+  const taxa = r.acertosDePrimeira / Math.max(1, r.rodadas);
+  let n = atual;
+  if (taxa >= 0.8 && r.ajudas === 0) n = atual + 1;
+  else if (taxa < 0.4) n = atual - 1;
+  return Math.min(3, Math.max(1, n)) as Nivel;
 }

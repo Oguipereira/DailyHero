@@ -4,22 +4,21 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Modal, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useApp } from '@/state/AppState';
 import { cores, espaco, fontes } from '@/theme/tokens';
 
-const SEGURAR_MS = 3000;
-
 /**
- * Botão X da lição: só sai se a pessoa segurar por 3 segundos.
+ * Botão X da lição: só sai se a pessoa segurar pelo tempo escolhido no Perfil (3 ou 5 s).
  * Um anel dourado vai enchendo enquanto segura. Soltou antes, volta a zero.
  */
-function SairSegurando({ onSair }: { onSair: () => void }) {
+function SairSegurando({ onSair, segundos }: { onSair: () => void; segundos: number }) {
   const progresso = useRef(new Animated.Value(0)).current;
   const [segurando, setSegurando] = useState(false);
   const anim = useRef<Animated.CompositeAnimation | null>(null);
 
   function comecar() {
     setSegurando(true);
-    anim.current = Animated.timing(progresso, { toValue: 1, duration: SEGURAR_MS, useNativeDriver: false });
+    anim.current = Animated.timing(progresso, { toValue: 1, duration: segundos * 1000, useNativeDriver: false });
     anim.current.start(({ finished }) => {
       if (finished) {
         setSegurando(false);
@@ -42,7 +41,7 @@ function SairSegurando({ onSair }: { onSair: () => void }) {
         onPressIn={comecar}
         onPressOut={soltar}
         accessibilityRole="button"
-        accessibilityLabel="Segure 3 segundos para sair da lição"
+        accessibilityLabel={`Segure ${segundos} segundos para sair da lição`}
         style={styles.x}>
         <Ionicons name="close" size={24} color={cores.licaoTextoSuave} />
         <View style={styles.barraFundo}>
@@ -71,12 +70,13 @@ export function TelaLicao({
   rolar?: boolean;
 }) {
   const [pausada, setPausada] = useState(false);
+  const sairSeg = useApp().ajustes.sairSeg;
   const Corpo = rolar ? ScrollView : View;
 
   return (
     <SafeAreaView style={styles.raiz}>
       <View style={styles.topo}>
-        <SairSegurando onSair={() => setPausada(true)} />
+        {sairSeg > 0 ? <SairSegurando segundos={sairSeg} onSair={() => setPausada(true)} /> : <View style={{ width: 44 }} />}
         <View style={{ flex: 1 }}>
           <Text accessibilityRole="header" style={styles.titulo}>
             {titulo}

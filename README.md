@@ -2,7 +2,7 @@
 
 App para crianças de 4 a 10 anos, incluindo crianças autistas (leve, moderado e não verbais), que une criação de hábitos, estímulos cognitivos e acompanhamento por pais e profissionais.
 
-Versão atual: **0.2.0 (fase 1, todas as telas navegáveis com dados de exemplo)**.
+Versão atual: **0.3.0 (fases 0 a 4 prontas; fase 5 é o teste com famílias)**.
 
 ## Como rodar no seu celular (Windows)
 
@@ -60,14 +60,29 @@ npm start
 ```
 src/
   app/                 telas (cada arquivo é uma tela)
-    index.tsx          modo criança: onde o app abre (só o PLAY)
+    index.tsx          abertura com o logo girando
+    login.tsx, cadastro.tsx, pin-novo.tsx, habitos.tsx   primeiro acesso
+    crianca.tsx        modo criança: herói, ofensiva e PLAY
     pin.tsx            PIN da área dos adultos
-    licao/             a lição diária (casa + jogos)
+    licao/             a lição diária (casa + tarefas + jogos + fim)
     (adulto)/          área dos adultos, com as 5 abas
-  components/          peças reutilizáveis (botão PLAY, moldura de tela...)
+    vincular.tsx, aprovacao.tsx   família adiciona e aprova profissional
+    prof/              tudo do profissional (painel, paciente, trilha, código)
+  components/          peças reutilizáveis (teclado do PIN, relatório, moldura...)
+  data/
+    catalogo.ts        hábitos e jogos
+    relatorio.ts       contas dos relatórios
+    nuvem.ts           conversa com o Supabase
+    segredos.ts        PIN e senha guardados com segurança
+  jogos/               os 3 jogos e as regras de nível
+  state/AppState.tsx   estado do app, salvo no celular e sincronizado
   theme/tokens.ts      cores, fontes e medidas do canvas
+supabase/migrations/   banco de dados e regras de acesso (LGPD)
 docs/
   DECISOES.md          decisões de produto já tomadas
+  SUPABASE.md          como ligar o banco na nuvem (15 minutos)
+  TESTE_FECHADO.md     roteiro do teste com famílias reais
+  TERMO_MODELO.md      modelo de termo de consentimento para o teste
 ```
 
 ## Plano de fases
@@ -75,22 +90,27 @@ docs/
 | Fase | O que entra | Status |
 |---|---|---|
 | 0 | Projeto, cores e fontes do canvas, telas navegáveis vazias | pronta |
-| 1 | Telas do canvas montadas, ainda sem banco de dados | pronta |
-| 2 | Login, cadastro, PIN e hábitos salvos de verdade (Supabase) | |
-| 3 | Lição: casa, tarefas com animação e os 3 jogos, coletando os dados | |
-| 4 | Relatórios e a parte do profissional | |
-| 5 | Teste fechado com famílias reais | |
+| 1 | Telas do canvas montadas | pronta |
+| 2 | Login, cadastro, PIN e hábitos salvos de verdade | pronta (no celular; nuvem pronta para ligar) |
+| 3 | Lição: casa, tarefas e os 3 jogos, coletando os dados, nível automático | pronta |
+| 4 | Relatórios reais e a parte do profissional | pronta |
+| 5 | Teste fechado com famílias reais | material pronto em `docs/` |
 
 O design de referência de todas as telas está no canvas do Daily Hero.
 
-## Como navegar na fase 1
+## Modo local e modo nuvem
 
-Os dados ainda são de exemplo e ficam só na memória: fechar o app zera tudo.
+- **Sem configurar nada (modo local):** tudo funciona e fica salvo **só no celular**. Fechar o app não perde nada. Família e profissional usam o mesmo aparelho, o que é ótimo para demonstrar.
+- **Com o Supabase ligado (modo nuvem):** cada pessoa entra no próprio celular, as lições sobem para a nuvem e o profissional vê tudo do consultório. Passo a passo em `docs/SUPABASE.md`.
 
-- **Criança:** abertura → Entrar → tela do Theo → **PLAY** → casa com as tarefas → jogos → como você se sentiu.
-  Para sair da lição no meio, segure o **X** por 3 segundos.
-- **Adultos:** na tela do Theo, toque no cadeado → digite **qualquer PIN de 4 dígitos** → abas Início, Jogos, Relatórios, Falar e Perfil.
-- **Profissional:** no login, escolha **Profissional** → Entrar → painel de pacientes → Trilha.
-- **Telas de teste:** em Perfil, no fim da página, há atalhos para a tela de erro, o convite do profissional e a abertura.
+## Como testar o app inteiro
 
-Esta fase adicionou o pacote `expo-speech` (a voz da aba Falar). Depois de baixar a atualização, rode `npm install` uma vez.
+1. **Primeiro acesso:** Entrar → "Primeiro acesso? Cadastrar família" → preencha → **crie o PIN** (4 números, duas vezes) → escolha os hábitos.
+2. **Criança:** PLAY → casa → cada tarefa: assista e coloque os passos na ordem → 3 jogos → "como você se sentiu?". Para sair no meio, segure o X.
+3. **Adultos:** cadeado → PIN. 3 erros seguidos travam por 30 s. "Esqueci o PIN" pede a senha da conta.
+4. **Relatórios:** aparecem depois da primeira tarefa. Antes disso dá para ver um exemplo.
+5. **Profissional (no mesmo celular, modo local):**
+   - Perfil › + Profissional › "Tenho um código" → digite `DH-AB12` → Aprovar.
+   - Saia da conta → login como **Profissional** → painel → toque no Theo para ver relatórios e escrever observações → Trilha.
+   - Observação com "Visível para a família" desligado não aparece para os pais.
+6. **Ajustes (Perfil):** animações, narração das tarefas, tempo para sair da lição, trocar PIN, apagar os dados do celular.

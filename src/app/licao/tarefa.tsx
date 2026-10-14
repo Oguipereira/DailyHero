@@ -1,3 +1,4 @@
+import * as Speech from 'expo-speech';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -19,6 +20,15 @@ const QUADRO_MS = 1600;
 export default function Tarefa() {
   const app = useApp();
   const habito = habitoPorId(app.habitos[app.tarefaAtual]);
+
+  // Narração: lê o nome da tarefa e os passos em voz alta (dá para desligar no Perfil).
+  useEffect(() => {
+    if (!app.ajustes.narracao) return;
+    Speech.speak(`${habito.nome}. ${habito.passos.join(', depois, ')}.`, { language: 'pt-BR', rate: 0.9 });
+    return () => {
+      Speech.stop();
+    };
+  }, [habito.id, app.ajustes.narracao]);
   const reduzido = useMovimentoReduzido();
   const inicio = useRef(Date.now()).current;
 
@@ -51,8 +61,7 @@ export default function Tarefa() {
   }
 
   function concluir() {
-    app.concluirTarefa({
-      atividade: `tarefa:${habito.id}`,
+    app.concluirTarefa(habito.id, {
       acertouDePrimeira: errosTotal === 0,
       tentativas,
       ajudas: 0,

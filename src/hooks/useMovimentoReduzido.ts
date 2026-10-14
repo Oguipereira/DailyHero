@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
-/** true quando o celular está com "reduzir movimento" ligado. Toda animação deve respeitar. */
+import { useAppOpcional } from '@/state/AppState';
+
+/** true quando o celular pede "reduzir movimento" ou a família desligou as animações no Perfil. Toda animação deve respeitar. */
 export function useMovimentoReduzido() {
   const [reduzido, setReduzido] = useState(false);
   useEffect(() => {
@@ -9,5 +11,6 @@ export function useMovimentoReduzido() {
     const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduzido);
     return () => sub.remove();
   }, []);
-  return reduzido;
+  const app = useAppOpcional();
+  return reduzido || app?.ajustes.animacoes === false;
 }

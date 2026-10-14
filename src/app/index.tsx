@@ -9,11 +9,11 @@ import { cores, fontes } from '@/theme/tokens';
 
 /** Abertura: o logo entra girando. Toque para entrar. */
 export default function Abertura() {
-  const { logado } = useApp();
+  const { logado, perfil } = useApp();
   const [pronto, setPronto] = useState(false);
 
   function entrar() {
-    router.replace(logado ? '/crianca' : '/login');
+    router.replace(!logado ? '/login' : perfil === 'profissional' ? '/prof/painel' : '/crianca');
   }
 
   return (

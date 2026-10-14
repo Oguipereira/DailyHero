@@ -22,15 +22,10 @@ export default function Jogo() {
   }
 
   const jogo = jogoPorId(id);
+  const nivel = app.niveis[id] ?? 1;
 
   function terminar(r: ResultadoJogo) {
-    app.concluirJogo({
-      atividade: `jogo:${id}`,
-      acertouDePrimeira: r.acertosDePrimeira === r.rodadas,
-      tentativas: r.tentativas,
-      ajudas: r.ajudas,
-      segundos: r.segundos,
-    });
+    app.concluirJogo(id!, r);
     if (indice + 1 >= trilha.length) router.replace('/licao/fim');
   }
 
@@ -40,13 +35,13 @@ export default function Jogo() {
   return (
     <TelaLicao titulo={nome} subtitulo={`Jogo ${indice + 1} de ${trilha.length}`} progresso={indice} total={trilha.length}>
       {id === 'emocoes' ? (
-        <Emocoes key={indice} onFim={terminar} />
+        <Emocoes key={indice} nivel={nivel} onFim={terminar} />
       ) : id === 'memoria' ? (
-        <Memoria key={indice} onFim={terminar} />
+        <Memoria key={indice} nivel={nivel} onFim={terminar} />
       ) : id === 'figuras' ? (
-        <Figuras key={indice} onFim={terminar} />
+        <Figuras key={indice} nivel={nivel} onFim={terminar} />
       ) : (
-        <Figuras key={indice} onFim={terminar} />
+        <Figuras key={indice} nivel={nivel} onFim={terminar} />
       )}
     </TelaLicao>
   );

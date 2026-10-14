@@ -15,21 +15,33 @@ const PERMISSOES = ['Ver relatórios e módulos de estímulo', 'Ver o dia após 
  */
 export default function Aprovacao() {
   const app = useApp();
-  const decidido = app.profissionalAprovado;
+  const st = app.profissional.status;
+  const decidido = st === 'aprovado' ? true : st === 'recusado' ? false : null;
+  const nome = app.profissional.nome || 'Profissional';
+  const codigo = app.profissional.codigo;
+
+  if (st === 'nenhum' || st === 'convidado') {
+    return (
+      <Tela voltar sobretitulo="ÁREA DO RESPONSÁVEL" titulo="Pedido de acesso">
+        <Texto suave>Nenhum pedido esperando. Para adicionar alguém, use Perfil › + Profissional.</Texto>
+        <Botao titulo="Adicionar profissional" onPress={() => router.replace('/vincular')} />
+      </Tela>
+    );
+  }
 
   return (
     <Tela voltar sobretitulo="ÁREA DO RESPONSÁVEL" titulo="Pedido de acesso">
       <Cartao>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarTxt}>P</Text>
+            <Text style={styles.avatarTxt}>{nome.charAt(0)}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.nome}>[Nome do profissional]</Text>
-            <Texto suave tamanho={13}>Psicologia · CRP 06/00000 · [Clínica]</Texto>
+            <Text style={styles.nome}>{nome}</Text>
+            <Texto suave tamanho={13}>{codigo ? `Código ${codigo}` : 'Convite por e-mail'}</Texto>
           </View>
         </View>
-        <Texto>{`Quer acompanhar ${app.nomeCrianca} pelo Daily Hero, com o código DH-7K4Q.`}</Texto>
+        <Texto>{`Quer acompanhar ${app.nomeCrianca} pelo Daily Hero.`}</Texto>
         <Aviso tipo="alerta" texto="Só aprove se você conhece este profissional." />
       </Cartao>
 
@@ -46,7 +58,7 @@ export default function Aprovacao() {
           <Texto suave centro>
             Nenhum dado é compartilhado com este profissional.
           </Texto>
-          <Botao variante="secundario" titulo="Desfazer" onPress={() => app.decidirProfissional(null)} estilo={{ alignSelf: 'stretch' }} />
+          <Botao variante="secundario" titulo="Voltar" onPress={() => router.back()} estilo={{ alignSelf: 'stretch' }} />
         </Cartao>
       ) : (
         <>

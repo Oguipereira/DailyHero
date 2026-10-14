@@ -21,10 +21,30 @@ function Etapa({ n, texto, suave }: { n: number; texto: string; suave?: boolean 
   );
 }
 
+/** dd/mm/aaaa enquanto digita. */
+function mascaraData(v: string) {
+  const n = v.replace(/\D/g, '').slice(0, 8);
+  return [n.slice(0, 2), n.slice(2, 4), n.slice(4)].filter(Boolean).join('/');
+}
+
 /** Cadastro da família: responsável, criança e (opcional) e-mail do profissional. */
 export default function Cadastro() {
-  const { entrar } = useApp();
+  const app = useApp();
   const [grau, setGrau] = useState<string | null>(null);
+  const [d, setD] = useState({ nomeResponsavel: '', email: '', senha: '', nomeCrianca: '', nascimento: '', emailProfissional: '' });
+  const [erro, setErro] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const campo = (k: keyof typeof d) => ({ value: d[k], onChangeText: (v: string) => setD((x) => ({ ...x, [k]: v })) });
+
+  async function enviar() {
+    setEnviando(true);
+    const e = await app.cadastrarFamilia({ ...d, grau });
+    setEnviando(false);
+    if (e?.startsWith('Conta criada')) return setAviso(e);
+    if (e) return setErro(e);
+    router.replace({ pathname: '/pin-novo', params: { origem: 'cadastro' } });
+  }
 
   return (
     <Tela
@@ -33,24 +53,27 @@ export default function Cadastro() {
       subtitulo="Só o básico para criar o acesso"
       fundo="#FFFFFF"
       rodape={
-        <Botao
-          titulo="Enviar dados"
-          onPress={() => {
-            entrar('responsavel');
-            router.replace({ pathname: '/pin-novo', params: { origem: 'cadastro' } });
-          }}
-        />
+        aviso ? (
+          <Botao titulo="Ir para o login" onPress={() => router.replace('/login')} />
+        ) : (
+          <Botao titulo={enviando ? 'Enviando…' : 'Enviar dados'} desativado={enviando} onPress={enviar} />
+        )
       }>
       <Etapa n={1} texto="DADOS DO RESPONSÁVEL" />
-      <Campo rotulo="Nome completo" autoComplete="name" />
-      <View style={styles.linha}>
-        <Campo rotulo="CPF" placeholder="000.000.000-00" keyboardType="number-pad" />
-        <Campo rotulo="E-mail" placeholder="voce@email.com" keyboardType="email-address" autoCapitalize="none" />
-      </View>
+      <Campo rotulo="Nome completo" autoComplete="name" {...campo('nomeResponsavel')} />
+      <Campo rotulo="E-mail" placeholder="voce@email.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" {...campo('email')} />
+      <Campo rotulo="Crie uma senha" placeholder="Mínimo de 8 caracteres" secureTextEntry autoComplete="new-password" {...campo('senha')} />
 
       <Etapa n={2} texto="DADOS DA CRIANÇA" />
-      <Campo rotulo="Nome completo" />
-      <Campo rotulo="Nascimento" placeholder="dd/mm/aaaa" keyboardType="number-pad" />
+      <Campo rotulo="Nome completo" {...campo('nomeCrianca')} />
+      <Campo
+        rotulo="Nascimento"
+        placeholder="dd/mm/aaaa"
+        keyboardType="number-pad"
+        maxLength={10}
+        value={d.nascimento}
+        onChangeText={(v) => setD((x) => ({ ...x, nascimento: mascaraData(v) }))}
+      />
       <View style={{ gap: 6 }}>
         <Text style={styles.rotulo}>Grau do autismo</Text>
         <View style={styles.chips}>
@@ -75,13 +98,14 @@ export default function Cadastro() {
         <Texto suave tamanho={13}>
           Se um profissional acompanha a criança, mandamos um convite. Ele cria a própria conta e vê os relatórios.
         </Texto>
-        <Campo rotulo="E-mail do profissional" placeholder="clinica@email.com" keyboardType="email-address" autoCapitalize="none" />
+        <Campo rotulo="E-mail do profissional" placeholder="clinica@email.com" keyboardType="email-address" autoCapitalize="none" {...campo('emailProfissional')} />
         <Texto suave tamanho={12}>
           Também dá pra adicionar depois, em Perfil, ou usar o código que o profissional te mandar.
         </Texto>
       </View>
 
-      <Aviso texto="Depois do envio, o responsável recebe o acesso por e-mail e o profissional recebe o convite." />
+      {erro ? <Aviso tipo="reforco" texto={erro} /> : null}
+      {aviso ? <Aviso tipo="sucesso" texto={aviso} /> : <Aviso texto="Pedimos só o necessário. Os dados da criança ficam protegidos e só quem você autorizar vê." />}
     </Tela>
   );
 }

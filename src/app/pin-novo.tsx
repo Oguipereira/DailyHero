@@ -15,7 +15,7 @@ import { cores, espaco, fontes } from '@/theme/tokens';
  * - cadastro: logo depois do cadastro da família
  * - primeiro: entrou pelo login e ainda não tinha PIN
  * - trocar: Perfil › PIN dos adultos (pede o PIN atual antes)
- * - esqueci: pede a senha da conta antes. Protótipo: a senha ainda não é conferida (fase 2, Supabase).
+ * - esqueci: pede a senha da conta antes (conferida no celular ou no Supabase).
  */
 type Origem = 'cadastro' | 'primeiro' | 'trocar' | 'esqueci';
 type Etapa = 'senha' | 'atual' | 'novo' | 'confirmar';
@@ -23,13 +23,25 @@ type Etapa = 'senha' | 'atual' | 'novo' | 'confirmar';
 export default function PinNovo() {
   const app = useApp();
   const { origem = 'cadastro' } = useLocalSearchParams<{ origem?: Origem }>();
-  const [etapa, setEtapa] = useState<Etapa>(origem === 'esqueci' ? 'senha' : origem === 'trocar' && app.pin ? 'atual' : 'novo');
+  const [etapa, setEtapa] = useState<Etapa>(origem === 'esqueci' ? 'senha' : origem === 'trocar' && app.temPin ? 'atual' : 'novo');
   const [novo, setNovo] = useState('');
   const [senha, setSenha] = useState('');
   const [pronto, setPronto] = useState(false);
+  const [erroSenha, setErroSenha] = useState('');
+  const [conferindo, setConferindo] = useState(false);
 
-  function terminar(pin: string) {
-    app.definirPin(pin);
+  async function conferirSenha() {
+    setConferindo(true);
+    const certa = await app.conferirSenha(senha);
+    setConferindo(false);
+    if (certa) {
+      setErroSenha('');
+      setEtapa('novo');
+    } else setErroSenha('Senha errada. Confira e tente de novo.');
+  }
+
+  async function terminar(pin: string) {
+    await app.criarPin(pin);
     if (origem === 'cadastro') return router.replace('/boas-vindas');
     if (origem === 'trocar') return setPronto(true);
     // primeiro / esqueci: entra direto na área dos adultos
@@ -37,9 +49,9 @@ export default function PinNovo() {
     router.push('/inicio');
   }
 
-  function aoCompletar(pin: string) {
+  async function aoCompletar(pin: string) {
     if (etapa === 'atual') {
-      if (pin !== app.pin) return 'Esse não é o PIN atual.';
+      if (!(await app.conferirPin(pin))) return 'Esse não é o PIN atual.';
       setEtapa('novo');
       return;
     }
@@ -53,7 +65,7 @@ export default function PinNovo() {
       setEtapa('novo');
       return 'Os dois PINs ficaram diferentes. Comece de novo.';
     }
-    terminar(pin);
+    await terminar(pin);
   }
 
   const voltar =
@@ -93,9 +105,10 @@ export default function PinNovo() {
           <Text style={styles.sub}>Confirme a senha da sua conta para criar um PIN novo.</Text>
         </View>
         <Campo rotulo="Senha da conta" secureTextEntry value={senha} onChangeText={setSenha} autoComplete="current-password" />
+        {erroSenha ? <Aviso tipo="reforco" texto={erroSenha} /> : null}
         <Aviso tipo="info" texto="Só o responsável sabe a senha da conta, então a criança não consegue trocar o PIN sozinha." />
         <View style={{ flex: 1 }} />
-        <Botao titulo="Continuar" desativado={senha.length === 0} onPress={() => setEtapa('novo')} />
+        <Botao titulo={conferindo ? 'Conferindo…' : 'Continuar'} desativado={senha.length === 0 || conferindo} onPress={conferirSenha} />
       </SafeAreaView>
     );
   }

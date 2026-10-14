@@ -26,19 +26,28 @@ function Linha({ icone, titulo, sub, onPress, fundo, tinta }: { icone: Icone; ti
   );
 }
 
-function Ajuste({ titulo, valorInicial }: { titulo: string; valorInicial: boolean }) {
-  const [v, setV] = useState(valorInicial);
+function Ajuste({ titulo, valor, onChange }: { titulo: string; valor: boolean; onChange: (v: boolean) => void }) {
   return (
     <View style={styles.ajuste}>
       <Text style={styles.ajusteTxt}>{titulo}</Text>
-      <Switch value={v} onValueChange={setV} trackColor={{ true: cores.primaria, false: '#C9C9DE' }} accessibilityLabel={titulo} />
+      <Switch value={valor} onValueChange={onChange} trackColor={{ true: cores.primaria, false: '#C9C9DE' }} accessibilityLabel={titulo} />
     </View>
   );
 }
 
+/** "7 anos" a partir de dd/mm/aaaa (ou null se a data não foi preenchida). */
+function idade(nasc: string) {
+  const m = nasc.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const hoje = new Date();
+  let anos = hoje.getFullYear() - Number(m[3]);
+  if (hoje.getMonth() + 1 < Number(m[2]) || (hoje.getMonth() + 1 === Number(m[2]) && hoje.getDate() < Number(m[1]))) anos--;
+  return anos >= 0 && anos < 30 ? `${anos} ${anos === 1 ? 'ano' : 'anos'}` : null;
+}
+
 export default function Perfil() {
   const app = useApp();
-  const [sair, setSair] = useState<'3' | '5' | 'fim'>('3');
+  const [confirmarApagar, setConfirmarApagar] = useState(false);
 
   return (
     <Tela comAbas titulo="Perfil">
@@ -48,57 +57,60 @@ export default function Perfil() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.criancaNome}>{app.nomeCrianca}</Text>
-          <Text style={styles.criancaSub}>[x] anos · dados do cadastro</Text>
+          <Text style={styles.criancaSub}>{idade(app.crianca.nascimento) ?? 'Dados do cadastro'}</Text>
         </View>
       </View>
 
       <Cartao>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Titulo2>Pessoas com acesso</Titulo2>
-          <Pressable onPress={() => router.push('/aprovacao')} accessibilityRole="button" style={styles.mais}>
+          <Pressable onPress={() => router.push('/vincular')} accessibilityRole="button" style={styles.mais}>
             <Text style={styles.maisTxt}>+ Profissional</Text>
           </Pressable>
         </View>
-        <Pessoa inicial="R" nome="[Nome do responsável]" email="responsavel@email.com" />
-        {app.profissionalAprovado ? (
+        <Pessoa inicial={(app.nomeResponsavel || 'R').charAt(0)} nome={app.nomeResponsavel || 'Responsável'} email={app.emailConta || 'Conta deste celular'} />
+        {app.profissional.status === 'aprovado' ? (
           <Pessoa
-            inicial="P"
-            nome="[Nome do profissional]"
-            email="clinica@email.com"
+            inicial={(app.profissional.nome || 'P').charAt(0)}
+            nome={app.profissional.nome || 'Profissional'}
+            email={app.profissional.email || 'Profissional'}
             onRemover={() => app.decidirProfissional(false)}
           />
+        ) : app.profissional.status === 'pendente' ? (
+          <Pressable onPress={() => router.push('/aprovacao')} accessibilityRole="button">
+            <Texto tamanho={13}>Há um pedido de acesso esperando você aprovar. Toque para ver.</Texto>
+          </Pressable>
+        ) : app.profissional.status === 'convidado' ? (
+          <Texto suave tamanho={13}>{`Convite enviado para ${app.profissional.email}. Esperando o profissional criar a conta.`}</Texto>
         ) : (
-          <Texto suave tamanho={13}>
-            {app.profissionalAprovado === null ? 'Há um pedido de acesso esperando você aprovar.' : 'Nenhum profissional com acesso.'}
-          </Texto>
+          <Texto suave tamanho={13}>Nenhum profissional com acesso.</Texto>
         )}
       </Cartao>
 
       <Cartao estilo={{ padding: 4, gap: 0 }}>
-        <Linha icone="home-outline" titulo="Hábitos da casa" sub={`${app.habitos.length} hábitos · tocar para editar a ordem`} onPress={() => router.push('/habitos')} fundo="#DFF7EF" tinta="#0D6650" />
-        <Linha icone="keypad-outline" titulo="PIN dos adultos" sub={app.pin ? 'Trocar o PIN' : 'Ainda não criado · tocar para criar'} onPress={() => router.push({ pathname: '/pin-novo', params: { origem: 'trocar' } })} fundo="#F1EAFE" tinta="#5B2DB8" />
+        <Linha icone="home-outline" titulo="Hábitos da casa" sub={`${app.habitos.length} hábitos · tocar para editar a ordem`} onPress={() => router.push({ pathname: '/habitos', params: { de: 'perfil' } })} fundo="#DFF7EF" tinta="#0D6650" />
+        <Linha icone="keypad-outline" titulo="PIN dos adultos" sub={app.temPin ? 'Trocar o PIN' : 'Ainda não criado · tocar para criar'} onPress={() => router.push({ pathname: '/pin-novo', params: { origem: 'trocar' } })} fundo="#F1EAFE" tinta="#5B2DB8" />
       </Cartao>
 
       <Cartao estilo={{ gap: 0 }}>
         <Titulo2>Acessibilidade e ajustes</Titulo2>
-        <Ajuste titulo="Sons e música" valorInicial />
-        <Ajuste titulo="Animações (inclui a abertura)" valorInicial />
-        <Ajuste titulo="Narração das telas" valorInicial />
+        <Ajuste titulo="Animações (inclui a abertura)" valor={app.ajustes.animacoes} onChange={(v) => app.mudarAjuste('animacoes', v)} />
+        <Ajuste titulo="Narração das tarefas (voz)" valor={app.ajustes.narracao} onChange={(v) => app.mudarAjuste('narracao', v)} />
         <View style={[styles.ajuste, { flexDirection: 'column', alignItems: 'stretch', gap: 8, paddingVertical: 10 }]}>
           <Text style={styles.ajusteTxt}>Sair da atividade</Text>
           <View style={{ flexDirection: 'row', gap: 6 }}>
             {[
-              { v: '3' as const, r: 'Segurar 3 s' },
-              { v: '5' as const, r: 'Segurar 5 s' },
-              { v: 'fim' as const, r: 'Só ao terminar' },
+              { v: 3 as const, r: 'Segurar 3 s' },
+              { v: 5 as const, r: 'Segurar 5 s' },
+              { v: 0 as const, r: 'Só ao terminar' },
             ].map((o) => (
               <Pressable
                 key={o.v}
-                onPress={() => setSair(o.v)}
+                onPress={() => app.mudarAjuste('sairSeg', o.v)}
                 accessibilityRole="radio"
-                accessibilityState={{ selected: sair === o.v }}
-                style={[styles.opcao, sair === o.v && styles.opcaoOn]}>
-                <Text style={[styles.opcaoTxt, sair === o.v && { color: cores.primariaEscura, fontFamily: fontes.textoForte }]}>{o.r}</Text>
+                accessibilityState={{ selected: app.ajustes.sairSeg === o.v }}
+                style={[styles.opcao, app.ajustes.sairSeg === o.v && styles.opcaoOn]}>
+                <Text style={[styles.opcaoTxt, app.ajustes.sairSeg === o.v && { color: cores.primariaEscura, fontFamily: fontes.textoForte }]}>{o.r}</Text>
               </Pressable>
             ))}
           </View>
@@ -111,7 +123,27 @@ export default function Perfil() {
         <Titulo2>Telas de teste (só no protótipo)</Titulo2>
         <Botao variante="texto" titulo="Ver a tela de erro" onPress={() => router.push('/erro')} />
         <Botao variante="texto" titulo="Ver o convite do profissional" onPress={() => router.push('/prof/convite')} />
+        <Botao variante="texto" titulo="Ver a pausa" onPress={() => router.push('/pausa')} />
         <Botao variante="texto" titulo="Ver a abertura de novo" onPress={() => router.replace('/')} />
+      </Cartao>
+
+      <Cartao>
+        <Titulo2>Privacidade</Titulo2>
+        <Texto suave tamanho={13}>
+          {app.nuvemAtiva
+            ? `Dados salvos neste celular e na sua conta.${app.pendentesDeEnvio ? ` ${app.pendentesDeEnvio} atividades esperando internet para subir.` : ' Tudo enviado.'}`
+            : 'Modo local: os dados ficam só neste celular. Ninguém mais tem acesso.'}
+        </Texto>
+        <Botao
+          variante="perigo"
+          titulo={confirmarApagar ? 'Toque de novo para apagar TUDO' : 'Apagar os dados deste celular'}
+          onPress={async () => {
+            if (!confirmarApagar) return setConfirmarApagar(true);
+            await app.apagarTudo();
+            router.replace('/login');
+          }}
+        />
+        {confirmarApagar ? <Botao variante="texto" titulo="Cancelar" onPress={() => setConfirmarApagar(false)} /> : null}
       </Cartao>
 
       <Botao

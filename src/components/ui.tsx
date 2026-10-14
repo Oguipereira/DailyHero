@@ -150,12 +150,12 @@ export function Segmentado<T extends string>({ opcoes, valor, onChange }: {
 }
 
 /** Fileira de bolinhas da semana (ofensiva). */
-export function SemanaOfensiva({ feitos, hojeIndice, escuro }: { feitos: number; hojeIndice: number; escuro?: boolean }) {
+export function SemanaOfensiva({ dias: feitosPorDia, hojeIndice, escuro }: { dias: boolean[]; hojeIndice: number; escuro?: boolean }) {
   const dias = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
       {dias.map((d, i) => {
-        const feito = i < feitos;
+        const feito = feitosPorDia[i];
         const hoje = i === hojeIndice && !feito;
         return (
           <View key={i} style={{ alignItems: 'center', gap: 4 }} accessible accessibilityLabel={`${d}: ${feito ? 'feito' : hoje ? 'hoje' : 'ainda não'}`}>

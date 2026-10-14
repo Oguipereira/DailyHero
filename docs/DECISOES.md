@@ -45,8 +45,24 @@ O status de cada módulo (bem / em evolução / precisa reforço) compara **a cr
 - Um profissional pode acompanhar **várias crianças** na mesma conta.
 - Dados de saúde de criança são sensíveis (LGPD): sempre com autorização do responsável.
 
+## Segurança e dados (14/10)
+
+- **PIN** de 4 números criado no cadastro, guardado só como resumo criptográfico no cofre do celular. Bloqueia sequências fáceis (1234, 0000). 3 erros travam o teclado por 30 s. "Esqueci o PIN" exige a senha da conta.
+- O app funciona **sem internet**: tudo fica no celular e sobe para a nuvem quando der.
+- No banco, as **regras de acesso** ficam no próprio Supabase (não só no app): o profissional só lê crianças com vínculo aprovado e só mexe na trilha.
+- Pedimos **só o necessário** no cadastro (o CPF saiu: não é usado para nada).
+- A família pode **apagar todos os dados** do celular no Perfil.
+
+## Nível dos jogos (14/10)
+
+- Começa no nível 1. Sobe quando a criança acerta 80% ou mais de primeira e sem ajuda; desce quando acerta menos de 40%. Vai de 1 a 3.
+- Os relatórios usam **% de acertos de primeira** e comparam a criança só com ela mesma.
+- Alerta de reforço quando um módulo cai 15 pontos ou mais nos últimos 3 dias.
+
 ## Em aberto
 
 - Planta definitiva da casa.
-- Conferir ou não o número do conselho do profissional.
+- Conferir ou não o número do conselho do profissional (hoje é só digitado).
+- Sons e música na lição.
+- Jogos marcados como "em breve" no catálogo.
 - Animações e vídeos finais das tarefas.

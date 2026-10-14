@@ -65,7 +65,7 @@ export default function Fim() {
               <Text style={styles.mais1Txt}>+1 hoje</Text>
             </View>
           </View>
-          <SemanaOfensiva feitos={Math.min(hoje + 1, 7)} hojeIndice={-1} escuro />
+          <SemanaOfensiva dias={app.semana.map((f, i) => f || i === hoje)} hojeIndice={-1} escuro />
         </View>
 
         <View style={{ gap: 10 }}>

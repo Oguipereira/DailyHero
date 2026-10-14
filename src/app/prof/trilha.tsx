@@ -1,38 +1,60 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Tela } from '@/components/Tela';
 import { Aviso, Botao, Cartao, Texto, Titulo2 } from '@/components/ui';
 import { JOGOS, jogoPorId, type JogoId } from '@/data/catalogo';
+import * as nuvem from '@/data/nuvem';
 import { useApp } from '@/state/AppState';
 import { cores, fontes, modulos } from '@/theme/tokens';
 
 /** O profissional monta a trilha de jogos da criança e quantos entram por dia. */
 export default function Trilha() {
   const app = useApp();
-  const [trilha, setTrilha] = useState<JogoId[]>(app.trilha);
-  const [porDia, setPorDia] = useState(app.jogosPorDia);
+  const { id = 'local', nome = app.nomeCrianca } = useLocalSearchParams<{ id?: string; nome?: string }>();
+  const local = id === 'local' || !nuvem.nuvemAtiva;
+  const [trilha, setTrilha] = useState<JogoId[]>(local ? app.trilha : []);
+  const [porDia, setPorDia] = useState(local ? app.jogosPorDia : 3);
+  const [erro, setErro] = useState('');
+  const [salvando, setSalvando] = useState(false);
+
+  // Na nuvem, carrega a trilha atual deste paciente.
+  useEffect(() => {
+    if (local) return;
+    void nuvem.listarPacientes().then((r) => {
+      const c = r.ok ? r.dados.find((x) => x.id === id) : undefined;
+      if (!c) return setErro(r.ok ? 'Paciente não encontrado.' : r.erro);
+      setTrilha(c.trilha as JogoId[]);
+      setPorDia(c.jogos_por_dia);
+    });
+  }, [id, local]);
+
+  async function salvar() {
+    if (local) {
+      app.definirTrilha(trilha, porDia);
+      return router.back();
+    }
+    setSalvando(true);
+    const r = await nuvem.salvarTrilhaNaNuvem(id, trilha, porDia);
+    setSalvando(false);
+    if (!r.ok) return setErro(r.erro);
+    router.back();
+  }
   const cheia = trilha.length >= porDia;
   const prontos = JOGOS.filter((j) => j.pronto && !trilha.includes(j.id));
 
   return (
     <Tela
       voltar
-      titulo={`Trilha de ${app.nomeCrianca}`}
+      titulo={`Trilha de ${nome}`}
       subtitulo="Jogos da atividade diária"
       rodape={
-        <Botao
-          titulo="Salvar trilha"
-          desativado={trilha.length === 0}
-          onPress={() => {
-            app.definirTrilha(trilha, porDia);
-            router.back();
-          }}
-        />
+        <Botao titulo={salvando ? 'Salvando…' : 'Salvar trilha'} desativado={trilha.length === 0 || salvando} onPress={salvar} />
       }>
-      <Aviso tipo="reforco" texto="Socioemocional pede reforço. Sugestão: manter o Jogo das emoções na trilha." />
+      {erro ? <Aviso tipo="reforco" texto={erro} /> : null}
+      <Aviso texto="O nível de cada jogo se ajusta sozinho: sobe quando a criança acerta quase tudo sem ajuda e desce quando erra muito." />
 
       <Cartao estilo={{ flexDirection: 'row', alignItems: 'center' }}>
         <View style={{ flex: 1 }}>

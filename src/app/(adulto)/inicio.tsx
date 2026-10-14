@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import type { ComponentProps } from 'react';
+import { useEffect, type ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BotaoPlay } from '@/components/BotaoPlay';
@@ -25,6 +25,11 @@ const DIAS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quint
 
 export default function Inicio() {
   const app = useApp();
+
+  // Puxa da nuvem o que o profissional mudou (pedido de acesso, observações).
+  useEffect(() => {
+    void app.atualizarDaNuvem();
+  }, []);
   const trilha = useTrilhaDeHoje();
   const hoje = new Date().getDay();
 
@@ -52,7 +57,7 @@ export default function Inicio() {
             </Texto>
           </View>
         </View>
-        <SemanaOfensiva feitos={Math.min(hoje + (app.licaoConcluidaHoje ? 1 : 0), 7)} hojeIndice={hoje} />
+        <SemanaOfensiva dias={app.semana} hojeIndice={hoje} />
       </Cartao>
 
       <View style={styles.licao}>

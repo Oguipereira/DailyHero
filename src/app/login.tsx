@@ -5,20 +5,28 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Campo } from '@/components/Campo';
 import { Logo } from '@/components/Logo';
 import { Tela } from '@/components/Tela';
-import { Botao, Segmentado, Texto } from '@/components/ui';
+import { Aviso, Botao, Segmentado, Texto } from '@/components/ui';
 import { useApp } from '@/state/AppState';
 import { cores, fontes } from '@/theme/tokens';
 
 /**
  * Login único: responsável e profissional entram pela mesma tela.
- * Protótipo: qualquer e-mail e senha entram. Na fase 2 o login passa a ser real.
+ * Com Supabase configurado, a senha é conferida no servidor.
+ * Sem ele (modo local), confere com a conta criada neste celular.
  */
 export default function Login() {
-  const { entrar } = useApp();
-  const [quem, setQuem] = useState<'responsavel' | 'profissional'>('responsavel');
+  const app = useApp();
+  const [quem, setQuem] = useState<'responsavel' | 'profissional'>(app.perfil);
+  const [email, setEmail] = useState(app.emailConta);
+  const [senha, setSenha] = useState('');
+  const [erro, setErro] = useState('');
+  const [entrando, setEntrando] = useState(false);
 
-  function continuar() {
-    entrar(quem);
+  async function continuar() {
+    setEntrando(true);
+    const e = await app.entrarComConta(email, senha, quem);
+    setEntrando(false);
+    if (e) return setErro(e);
     router.replace(quem === 'responsavel' ? '/crianca' : '/prof/painel');
   }
 
@@ -41,22 +49,35 @@ export default function Login() {
         <Text accessibilityRole="header" style={styles.titulo}>
           Entrar
         </Text>
-        <Texto suave>Use o acesso que chegou no seu e-mail.</Texto>
+        <Texto suave>{app.nuvemAtiva ? 'Use o e-mail e a senha da sua conta.' : 'Modo local: os dados ficam só neste celular.'}</Texto>
       </View>
 
       <Segmentado
         valor={quem}
-        onChange={setQuem}
+        onChange={(v) => {
+          setQuem(v);
+          setErro('');
+        }}
         opcoes={[
           { valor: 'responsavel', rotulo: 'Responsável' },
           { valor: 'profissional', rotulo: 'Profissional' },
         ]}
       />
 
-      <Campo rotulo="E-mail" placeholder="email@dominio.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" />
-      <Campo rotulo="Senha" placeholder="Sua senha" secureTextEntry autoComplete="password" />
+      <Campo
+        rotulo="E-mail"
+        placeholder="email@dominio.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <Campo rotulo="Senha" placeholder="Sua senha" secureTextEntry autoComplete="password" value={senha} onChangeText={setSenha} onSubmitEditing={continuar} />
 
-      <Botao titulo="Continuar" onPress={continuar} />
+      {erro ? <Aviso tipo="reforco" texto={erro} /> : null}
+
+      <Botao titulo={entrando ? 'Entrando…' : 'Continuar'} desativado={entrando} onPress={continuar} />
 
       <Botao
         variante="texto"

@@ -1,16 +1,22 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import * as Clipboard from 'expo-clipboard';
 import { Share, StyleSheet, Text, View } from 'react-native';
 
 import { Tela } from '@/components/Tela';
 import { Botao, Cartao, Texto, Titulo2 } from '@/components/ui';
+import { useApp } from '@/state/AppState';
 import { cores, fontes } from '@/theme/tokens';
-
-const CODIGO = 'DH-7K4Q';
 
 /** Caminho 2: o profissional gera um código para a família aprovar. */
 export default function Vinculo() {
+  const app = useApp();
   const [copiado, setCopiado] = useState(false);
+  const [CODIGO, setCodigo] = useState(app.codigoGerado || '…');
+
+  useEffect(() => {
+    void app.gerarCodigo().then(setCodigo);
+  }, []);
 
   return (
     <Tela voltar titulo="Adicionar paciente" subtitulo="Quando a família ainda não te convidou">
@@ -24,7 +30,10 @@ export default function Vinculo() {
             variante="secundario"
             icone={copiado ? 'checkmark' : 'copy-outline'}
             titulo={copiado ? 'Copiado!' : 'Copiar'}
-            onPress={() => setCopiado(true)}
+            onPress={async () => {
+              await Clipboard.setStringAsync(CODIGO);
+              setCopiado(true);
+            }}
             estilo={{ flex: 1 }}
           />
           <Botao
@@ -40,7 +49,7 @@ export default function Vinculo() {
 
       <Cartao>
         <Titulo2>Como funciona</Titulo2>
-        {['Mande o código para o responsável.', 'Ele digita no app, em Perfil › + Profissional.', 'Quando ele aprovar, a criança aparece na sua lista.'].map((t, i) => (
+        {['Mande o código para o responsável.', 'Ele digita no app, em Perfil › + Profissional › Tenho um código.', 'Quando ele aprovar, a criança aparece na sua lista.'].map((t, i) => (
           <View key={t} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
             <View style={styles.num}>
               <Text style={styles.numTxt}>{i + 1}</Text>
@@ -52,12 +61,11 @@ export default function Vinculo() {
         ))}
       </Cartao>
 
-      <Titulo2>Aguardando aprovação</Titulo2>
       <View style={styles.espera}>
-        <Ionicons name="time-outline" size={22} color="#8A5000" />
+        <Ionicons name="shield-checkmark-outline" size={22} color="#8A5000" />
         <View style={{ flex: 1 }}>
-          <Text style={styles.esperaTitulo}>{`Código ${CODIGO}`}</Text>
-          <Texto suave tamanho={13}>Enviado há 2 h · a família ainda não respondeu</Texto>
+          <Text style={styles.esperaTitulo}>Nada é compartilhado sem a família</Text>
+          <Texto suave tamanho={13}>A criança só aparece no seu painel depois que o responsável aprovar.</Texto>
         </View>
       </View>
     </Tela>

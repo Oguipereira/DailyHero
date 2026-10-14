@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { ReactElement, ReactNode } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, type RefreshControlProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { cores, espaco, fontes, TOQUE_MINIMO } from '@/theme/tokens';
@@ -20,14 +20,16 @@ type Props = {
   fundo?: string;
   /** Sem a área segura de baixo (quando há barra de abas). */
   comAbas?: boolean;
+  /** Puxar para atualizar (um <RefreshControl />). */
+  rolagem?: ReactElement<RefreshControlProps>;
   children?: ReactNode;
 };
 
 /** Moldura padrão das telas da área dos adultos. */
-export function Tela({ titulo, subtitulo, sobretitulo, voltar, direita, rodape, fundo = cores.fundo, comAbas, children }: Props) {
+export function Tela({ titulo, subtitulo, sobretitulo, voltar, direita, rodape, fundo = cores.fundo, comAbas, rolagem, children }: Props) {
   return (
     <SafeAreaView style={[styles.raiz, { backgroundColor: fundo }]} edges={comAbas ? ['top', 'left', 'right'] : undefined}>
-      <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled" refreshControl={rolagem}>
         {titulo || voltar ? (
           <View style={styles.cabecalho}>
             {voltar ? (
