@@ -93,6 +93,22 @@ export const DURACAO_ABERTURA = 3600;
 const SUAVE = Easing.bezier(0.2, 0.8, 0.2, 1);
 
 /**
+ * O celular (animação nativa) não aceita "easing" dentro de interpolate.
+ * Então a curva suave do canvas vira 13 pontos amostrados: mesmo movimento, funciona em todo lugar.
+ */
+const AMOSTRAS = [0, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
+function curvaSuave(t: Animated.Value, ate: number, de: number, para: number, unidade = '') {
+  return t.interpolate({
+    inputRange: AMOSTRAS.map((x) => x * ate),
+    outputRange: AMOSTRAS.map((x) => {
+      const v = de + (para - de) * SUAVE(x);
+      return unidade ? `${v}${unidade}` : v;
+    }) as number[] | string[],
+    extrapolate: 'clamp',
+  });
+}
+
+/**
  * Relógio da abertura: vai de 0 a 3600 (milissegundos), uma vez só.
  * A tela usa o mesmo relógio para fazer o nome aparecer na hora certa.
  * Com "reduzir movimento", já começa no fim (tudo parado no lugar).
@@ -127,8 +143,8 @@ export function LogoAbertura({ tamanho, relogio: t }: { tamanho: number; relogio
   const anel = {
     opacity: t.interpolate({ inputRange: [0, 400], outputRange: [0, 1], extrapolate: 'clamp' }),
     transform: [
-      { rotate: t.interpolate({ inputRange: [0, 1600], outputRange: ['-300deg', '0deg'], easing: SUAVE, extrapolate: 'clamp' }) },
-      { scale: t.interpolate({ inputRange: [0, 1600], outputRange: [0.7, 1], easing: SUAVE, extrapolate: 'clamp' }) },
+      { rotate: curvaSuave(t, 1600, -300, 0, 'deg') },
+      { scale: curvaSuave(t, 1600, 0.7, 1) },
     ],
   };
   const acende = (atraso: number) => ({
