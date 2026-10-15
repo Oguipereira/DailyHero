@@ -186,7 +186,7 @@ create function public.gerar_codigo() returns text
 language plpgsql security definer set search_path = public as $$
 declare novo text;
 begin
-  if (select papel from perfis where id = auth.uid()) <> 'profissional' then
+  if (select papel from perfis where id = auth.uid()) is distinct from 'profissional' then
     raise exception 'só profissional gera código';
   end if;
   novo := 'DH-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 4));
@@ -210,7 +210,7 @@ create function public.aceitar_meus_convites() returns int
 language plpgsql security definer set search_path = public as $$
 declare n int;
 begin
-  if (select papel from perfis where id = auth.uid()) <> 'profissional' then return 0; end if;
+  if (select papel from perfis where id = auth.uid()) is distinct from 'profissional' then return 0; end if;
   update vinculos set profissional_id = auth.uid(), status = 'aprovado'
   where origem = 'convite' and status = 'pendente' and profissional_id is null
     and lower(email_convidado) = lower((select email from auth.users where id = auth.uid()))
@@ -225,3 +225,10 @@ language sql stable security definer set search_path = public as $$
   select v.codigo, c.nome from vinculos v join criancas c on c.id = v.crianca_id
   where v.profissional_id = auth.uid() and v.status = 'pendente'
 $$;
+
+-- ---------------------------------------------------------------- quem chama as funções
+-- Só quem está logado chama as funções do app (visitantes sem login, não).
+revoke execute on all functions in schema public from public, anon;
+grant execute on function public.eh_responsavel(uuid), public.eh_profissional(uuid), public.definir_trilha(uuid, text[], int),
+  public.gerar_codigo(), public.usar_codigo(uuid, text), public.aceitar_meus_convites(), public.meus_pedidos() to authenticated;
+revoke execute on function public.criar_perfil() from public, anon, authenticated;
