@@ -6,15 +6,15 @@ import { cores, fontes } from '@/theme/tokens';
 
 type Icone = ComponentProps<typeof Ionicons>['name'];
 
-const ABAS: { nome: string; titulo: string; icone: Icone }[] = [
-  { nome: 'inicio', titulo: 'Início', icone: 'home-outline' },
-  { nome: 'jogos', titulo: 'Jogos', icone: 'game-controller-outline' },
-  { nome: 'relatorios', titulo: 'Relatórios', icone: 'bar-chart-outline' },
-  { nome: 'falar', titulo: 'Falar', icone: 'chatbubble-outline' },
-  { nome: 'perfil', titulo: 'Perfil', icone: 'person-circle-outline' },
+const ABAS: { nome: string; titulo: string; icone: Icone; iconeOn: Icone }[] = [
+  { nome: 'inicio', titulo: 'Início', icone: 'home-outline', iconeOn: 'home' },
+  { nome: 'jogos', titulo: 'Jogos', icone: 'game-controller-outline', iconeOn: 'game-controller' },
+  { nome: 'relatorios', titulo: 'Relatórios', icone: 'bar-chart-outline', iconeOn: 'bar-chart' },
+  { nome: 'falar', titulo: 'Falar', icone: 'chatbubble-outline', iconeOn: 'chatbubble' },
+  { nome: 'perfil', titulo: 'Perfil', icone: 'person-circle-outline', iconeOn: 'person-circle' },
 ];
 
-/** Área dos adultos: só se chega aqui depois do PIN. Navegação com as 5 abas do documento. */
+/** Área dos adultos: só se chega aqui depois do PIN. As 5 abas do documento. */
 export default function AreaAdulto() {
   return (
     <Tabs
@@ -22,7 +22,7 @@ export default function AreaAdulto() {
         headerShown: false,
         tabBarActiveTintColor: cores.primaria,
         tabBarInactiveTintColor: cores.textoSuave,
-        tabBarStyle: { backgroundColor: cores.superficie, borderTopColor: cores.borda },
+        tabBarStyle: { backgroundColor: cores.superficie, borderTopColor: cores.borda, height: 88, paddingTop: 8 },
         tabBarLabelStyle: { fontFamily: fontes.textoForte, fontSize: 12 },
       }}>
       {ABAS.map((aba) => (
@@ -31,7 +31,7 @@ export default function AreaAdulto() {
           name={aba.nome}
           options={{
             title: aba.titulo,
-            tabBarIcon: ({ color, size }) => <Ionicons name={aba.icone} color={color} size={size} />,
+            tabBarIcon: ({ color, focused }) => <Ionicons name={focused ? aba.iconeOn : aba.icone} color={color} size={24} />,
           }}
         />
       ))}
