@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 
 import { TelaLicao } from '@/components/licao';
-import { jogoPorId } from '@/data/catalogo';
+import { JOGOS } from '@/data/catalogo';
 import { Emocoes } from '@/jogos/Emocoes';
 import { Figuras } from '@/jogos/Figuras';
 import { Memoria } from '@/jogos/Memoria';
@@ -21,7 +21,11 @@ export default function Jogo() {
     return null;
   }
 
-  const jogo = jogoPorId(id);
+  const jogo = JOGOS.find((j) => j.id === id);
+  if (!jogo) {
+    setTimeout(() => router.replace('/licao/fim'), 0);
+    return null;
+  }
   const nivel = app.niveis[id] ?? 1;
 
   function terminar(r: ResultadoJogo) {

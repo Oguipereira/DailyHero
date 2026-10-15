@@ -3,7 +3,7 @@ import { Text, View, useWindowDimensions } from 'react-native';
 
 import { CasaPixel, CASA_L } from '@/components/CasaPixel';
 import { BotaoPixel, CaixaLicao, TelaLicao } from '@/components/licao';
-import { habitoPorId } from '@/data/catalogo';
+import { HABITOS } from '@/data/catalogo';
 import { useApp, useTrilhaDeHoje } from '@/state/AppState';
 import { cores, fontes, modulos } from '@/theme/tokens';
 
@@ -16,13 +16,15 @@ export default function Casa() {
   const total = app.habitos.length;
   const atual = app.tarefaAtual;
   const terminou = atual >= total;
-  const habito = terminou ? null : habitoPorId(app.habitos[atual]);
+  const habito = terminou ? null : (HABITOS.find((h) => h.id === app.habitos[atual]) ?? null);
+  // Hábito desconhecido (dado antigo): trata como se a parte da casa tivesse acabado.
+  const semHabito = !terminou && !habito;
   const tinta = habito
     ? { Quarto: modulos.socio, Banheiro: modulos.cog, Sala: modulos.hab, Cozinha: modulos.ling }[habito.comodo]
     : null;
 
   return (
-    <TelaLicao titulo="Tasks da casa" subtitulo={terminou ? 'Tudo feito!' : `Agora: ${habito!.comodo.toLowerCase()}`} progresso={atual} total={total}>
+    <TelaLicao titulo="Tasks da casa" subtitulo={terminou || semHabito || !habito ? 'Tudo feito!' : `Agora: ${habito.comodo.toLowerCase()}`} progresso={atual} total={total}>
       <CasaPixel habitos={app.habitos} atual={atual} escala={escala} />
 
       {habito && tinta ? (

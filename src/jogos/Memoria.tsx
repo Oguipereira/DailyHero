@@ -38,6 +38,7 @@ export function Memoria({ nivel = 1, onFim }: { nivel?: Nivel; onFim: (r: Result
   useEffect(() => {
     if (abertas.length !== 2) return;
     const [a, b] = abertas.map((i) => cartas[i]);
+    if (!a || !b) return setAbertas([]);
     setTentativas((t) => t + 1);
     if (a.nome === b.nome) {
       setAchadas((x) => [...x, a.nome]);
@@ -52,7 +53,7 @@ export function Memoria({ nivel = 1, onFim }: { nivel?: Nivel; onFim: (r: Result
   }, [abertas]);
 
   function virar(i: number) {
-    if (abertas.length === 2 || abertas.includes(i) || achadas.includes(cartas[i].nome)) return;
+    if (!cartas[i] || abertas.length === 2 || abertas.includes(i) || achadas.includes(cartas[i].nome)) return;
     setAbertas((a) => [...a, i]);
     setVistas((v) => new Set(v).add(i));
   }

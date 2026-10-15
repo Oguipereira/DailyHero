@@ -325,7 +325,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
             if (!criado.ok) return criado.erro;
             c = { id: criado.dados, nome: local.crianca.nome, nascimento: nascimentoISO(local.crianca.nascimento), grau: local.crianca.grau, habitos: local.habitos, trilha: local.trilha, jogos_por_dia: local.jogosPorDia, niveis: {} };
           }
+          // Outra conta ou outra criança neste celular: o que ficou guardado era de outra família.
+          const trocouConta = local.emailConta.toLowerCase() !== email.toLowerCase() || (c ? local.crianca.idNuvem !== c.id && local.crianca.idNuvem !== '' : false);
+          if (trocouConta) await PIN.apagar();
           atualizar((s) => ({
+            ...(trocouConta ? { registros: [], licoes: [], observacoes: [], niveis: {}, codigoGerado: '', temPin: false, profissional: inicial.profissional } : {}),
             criancaPendente: false,
             logado: true,
             perfil: papel,
@@ -370,8 +374,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           if (!r.ok) return r.erro;
           if (r.dados.precisaConfirmar) {
             // Sem sessão ainda: guarda a criança neste celular e cria na nuvem no primeiro login.
+            await PIN.apagar();
             setE((s) => ({
               ...s,
+              registros: [],
+              licoes: [],
+              observacoes: [],
+              niveis: {},
+              temPin: false,
               logado: false,
               perfil: 'responsavel',
               emailConta: d.email.trim(),

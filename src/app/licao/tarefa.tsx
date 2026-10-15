@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BotaoPixel, CaixaLicao, Surgir, TelaLicao } from '@/components/licao';
 import { Pixel, heroi } from '@/components/Pixel';
-import { habitoPorId } from '@/data/catalogo';
+import { HABITOS } from '@/data/catalogo';
 import { useMovimentoReduzido } from '@/hooks/useMovimentoReduzido';
 import { useApp } from '@/state/AppState';
 import { cores, fontes } from '@/theme/tokens';
@@ -19,7 +19,15 @@ const QUADRO_MS = 1600;
  */
 export default function Tarefa() {
   const app = useApp();
-  const habito = habitoPorId(app.habitos[app.tarefaAtual]);
+  // O hábito é fixado ao abrir a tela: ao concluir, tarefaAtual avança e a tela não pode trocar de hábito
+  // (na última tarefa não existe "próxima", e isso derrubava o app).
+  const [habitoId] = useState(() => app.habitos[app.tarefaAtual]);
+  const [numero] = useState(() => app.tarefaAtual + 1);
+  const achado = habitoId ? HABITOS.find((h) => h.id === habitoId) : undefined;
+  const habito = achado ?? HABITOS[0]; // reserva só para não quebrar; a tela fecha logo abaixo
+  useEffect(() => {
+    if (!achado) router.back();
+  }, [achado]);
 
   // Narração: lê o nome da tarefa e os passos em voz alta (dá para desligar no Perfil).
   useEffect(() => {
@@ -71,7 +79,7 @@ export default function Tarefa() {
   }
 
   return (
-    <TelaLicao titulo={habito.nome} subtitulo={`${habito.comodo} · tarefa ${app.tarefaAtual + 1} de ${app.habitos.length}`}>
+    <TelaLicao titulo={habito.nome} subtitulo={`${habito.comodo} · tarefa ${numero} de ${app.habitos.length}`}>
       <Text style={styles.etapa}>1. ASSISTA</Text>
       <View style={styles.tela} accessible accessibilityLabel={`Animação: ${habito.passos.join(', depois ')}`}>
         <View style={styles.cena}>
