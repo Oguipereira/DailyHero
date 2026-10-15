@@ -89,6 +89,9 @@ export async function cadastrarFamilia(p: {
       options: { data: { papel: 'responsavel', nome: p.nome }, emailRedirectTo: voltaParaOApp() },
     });
     if (error) throw error;
+    // E-mail já cadastrado: por segurança o Supabase responde "ok" sem criar nada (e sem mandar e-mail).
+    // Dá para reconhecer porque a conta volta sem nenhuma forma de login (identities vazio).
+    if (data.user && (data.user.identities?.length ?? 0) === 0) return falha('Já existe uma conta com esse e-mail. Entre pelo login.');
     // Se o projeto pede confirmação de e-mail, ainda não há sessão: a criança é criada no primeiro login.
     if (!data.session) return ok({ criancaId: '', precisaConfirmar: true });
     const c = await criarCrianca(data.user!.id, p.crianca, p.emailProfissional);
@@ -132,6 +135,7 @@ export async function cadastrarProfissional(p: {
       options: { data: { papel: 'profissional', ...meta }, emailRedirectTo: voltaParaOApp() },
     });
     if (error) throw error;
+    if (data.user && (data.user.identities?.length ?? 0) === 0) return falha('Já existe uma conta com esse e-mail. Entre pelo login.');
     return ok({ precisaConfirmar: !data.session });
   } catch (e) {
     return falha(e);
