@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Modal, Pressable, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Respiracao } from '@/components/Respiracao';
 import { useApp } from '@/state/AppState';
 import { cores, espaco, fontes } from '@/theme/tokens';
 
@@ -70,6 +71,8 @@ export function TelaLicao({
   rolar?: boolean;
 }) {
   const [pausada, setPausada] = useState(false);
+  const [respirando, setRespirando] = useState(false);
+  const [rodada, setRodada] = useState(0);
   const sairSeg = useApp().ajustes.sairSeg;
   const Corpo = rolar ? ScrollView : View;
 
@@ -84,6 +87,19 @@ export function TelaLicao({
           {subtitulo ? <Text style={styles.subtitulo}>{subtitulo}</Text> : null}
         </View>
         {total ? <Text style={styles.contador}>{`${progresso ?? 0}/${total}`}</Text> : null}
+        <View style={{ alignItems: 'center', gap: 4 }}>
+          <Pressable
+            onPress={() => {
+              setRodada((r) => r + 1);
+              setRespirando(true);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Preciso de pausa: respirar um pouco"
+            style={styles.pausa}>
+            <Ionicons name="pause" size={22} color={cores.licaoTextoSuave} />
+          </Pressable>
+          <Text style={styles.xDica}>pausa</Text>
+        </View>
       </View>
 
       {total ? (
@@ -104,6 +120,24 @@ export function TelaLicao({
       <Corpo style={{ flex: 1 }} contentContainerStyle={rolar ? styles.corpo : undefined}>
         {rolar ? children : <View style={[styles.corpo, { flex: 1 }]}>{children}</View>}
       </Corpo>
+
+      {/* Preciso de pausa: respiração guiada sem sair da lição. Fecha e volta exatamente de onde parou. */}
+      <Modal visible={respirando} animationType="fade" onRequestClose={() => setRespirando(false)}>
+        <SafeAreaView style={styles.respiraRaiz}>
+          <Text accessibilityRole="header" style={styles.respiraTitulo}>
+            Hora de respirar
+          </Text>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Respiracao reiniciar={rodada} />
+          </View>
+          <View style={{ gap: 12, alignSelf: 'stretch' }}>
+            <BotaoPixel titulo="Estou melhor" cor={cores.primaria} tinta="#FFFFFF" onPress={() => setRespirando(false)} />
+            <Pressable onPress={() => setRodada((r) => r + 1)} accessibilityRole="button" style={styles.respiraMais}>
+              <Text style={styles.respiraMaisTxt}>Mais um pouquinho</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </Modal>
 
       <Modal visible={pausada} transparent animationType="fade" onRequestClose={() => setPausada(false)}>
         <View style={styles.veu}>
@@ -199,6 +233,11 @@ const styles = StyleSheet.create({
   xDica: { fontFamily: fontes.texto, fontSize: 11, color: '#8E89C9' },
   titulo: { fontFamily: fontes.pixel, fontSize: 24, color: '#FFFFFF' },
   subtitulo: { fontFamily: fontes.texto, fontSize: 14, color: cores.licaoTextoSuave },
+  pausa: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: cores.licaoBorda, alignItems: 'center', justifyContent: 'center' },
+  respiraRaiz: { flex: 1, backgroundColor: '#E8F6FD', padding: espaco.xxl, alignItems: 'center' },
+  respiraTitulo: { fontFamily: fontes.titulo, fontSize: 30, color: cores.texto, marginTop: espaco.xl },
+  respiraMais: { minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  respiraMaisTxt: { fontFamily: fontes.textoForte, fontSize: 16, color: cores.primaria },
   contador: { fontFamily: fontes.pixel, fontSize: 20, color: cores.ouroClaro },
   blocos: { flexDirection: 'row', gap: 5, paddingHorizontal: espaco.xl, marginTop: espaco.m },
   bloco: { flex: 1, height: 12, backgroundColor: '#3B3570' },

@@ -87,7 +87,7 @@ export default function Inicio() {
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <Atalho titulo="Quero falar" icone="chatbubble-ellipses-outline" fundo="#E1F4FC" tinta="#0B5878" onPress={() => router.push('/falar')} />
-        <Atalho titulo="Preciso de pausa" icone="pause-circle-outline" fundo="#DFF7EF" tinta="#0D6650" onPress={() => router.push('/pausa')} />
+        <Atalho titulo="Relatório de hoje" icone="bar-chart-outline" fundo="#DFF7EF" tinta="#0D6650" onPress={() => router.push('/relatorios')} />
       </View>
 
       <Titulo2>Sobre nós</Titulo2>
