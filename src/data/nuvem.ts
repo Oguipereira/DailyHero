@@ -43,6 +43,9 @@ function traduzir(e: unknown): string {
   if (/invalid login credentials/i.test(msg)) return 'E-mail ou senha errados.';
   if (/already registered/i.test(msg)) return 'Já existe uma conta com esse e-mail.';
   if (/password should be at least/i.test(msg)) return 'A senha precisa ter pelo menos 8 caracteres.';
+  if (/signups? (are|is) disabled|signup.*not allowed/i.test(msg)) return 'Os cadastros estão fechados no momento. Tente de novo mais tarde.';
+  if (/rate limit|too many/i.test(msg)) return 'Muitas tentativas seguidas. Espere um minuto e tente de novo.';
+  if (/invalid.*email|email.*invalid/i.test(msg)) return 'Confira o e-mail digitado.';
   if (/email not confirmed/i.test(msg)) return 'Confirme o e-mail antes de entrar (veja sua caixa de entrada).';
   if (/network|fetch/i.test(msg)) return 'Sem internet agora. Tente de novo em instantes.';
   return msg || 'Algo deu errado.';
