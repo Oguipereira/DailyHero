@@ -81,20 +81,29 @@ export async function cadastrarFamilia(p: {
       options: { data: { papel: 'responsavel', nome: p.nome } },
     });
     if (error) throw error;
+    // Se o projeto pede confirmação de e-mail, ainda não há sessão: a criança é criada no primeiro login.
     if (!data.session) return ok({ criancaId: '', precisaConfirmar: true });
-    const { data: c, error: e2 } = await supabase
-      .from('criancas')
-      .insert({ responsavel_id: data.user!.id, ...p.crianca })
-      .select('id')
-      .single();
-    if (e2) throw e2;
-    if (p.emailProfissional) {
-      await supabase.from('vinculos').insert({ crianca_id: c.id, origem: 'convite', email_convidado: p.emailProfissional });
-    }
-    return ok({ criancaId: c.id as string, precisaConfirmar: false });
+    const c = await criarCrianca(data.user!.id, p.crianca, p.emailProfissional);
+    if (!c.ok) return c;
+    return ok({ criancaId: c.dados, precisaConfirmar: false });
   } catch (e) {
     return falha(e);
   }
+}
+
+/** Cria a criança do responsável logado (e o convite do profissional, se houver). Devolve o id. */
+export async function criarCrianca(
+  responsavelId: string,
+  crianca: { nome: string; nascimento: string | null; grau: string | null; habitos: string[] },
+  emailProfissional?: string,
+): Promise<Resultado<string>> {
+  if (!supabase) return falha('Modo local');
+  const { data: c, error } = await supabase.from('criancas').insert({ responsavel_id: responsavelId, ...crianca }).select('id').single();
+  if (error) return falha(error);
+  if (emailProfissional) {
+    await supabase.from('vinculos').insert({ crianca_id: c.id, origem: 'convite', email_convidado: emailProfissional });
+  }
+  return ok(c.id as string);
 }
 
 export async function cadastrarProfissional(p: {
@@ -121,7 +130,7 @@ export async function cadastrarProfissional(p: {
   }
 }
 
-export async function entrarNaNuvem(email: string, senha: string): Promise<Resultado<{ papel: Papel; nome: string; crianca: CriancaNuvem | null }>> {
+export async function entrarNaNuvem(email: string, senha: string): Promise<Resultado<{ userId: string; papel: Papel; nome: string; crianca: CriancaNuvem | null }>> {
   if (!supabase) return falha('Modo local');
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
@@ -133,7 +142,7 @@ export async function entrarNaNuvem(email: string, senha: string): Promise<Resul
       const { data: c } = await supabase.from('criancas').select('*').eq('responsavel_id', data.user.id).limit(1).maybeSingle();
       crianca = (c as CriancaNuvem) ?? null;
     }
-    return ok({ papel: perfil.papel as Papel, nome: perfil.nome as string, crianca });
+    return ok({ userId: data.user.id, papel: perfil.papel as Papel, nome: perfil.nome as string, crianca });
   } catch (e) {
     return falha(e);
   }

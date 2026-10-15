@@ -79,6 +79,8 @@ type Salvo = {
   codigoGerado: string;
   temPin: boolean;
   ajustes: Ajustes;
+  /** Cadastro feito, esperando a confirmação do e-mail para criar a criança na nuvem. */
+  criancaPendente: boolean;
 };
 
 type Transitorio = {
@@ -175,6 +177,7 @@ const inicial: Salvo = {
   codigoGerado: '',
   temPin: false,
   ajustes: { animacoes: true, narracao: true, sairSeg: 3 },
+  criancaPendente: false,
 };
 
 // ------------------------------------------------------------------ datas
@@ -311,8 +314,19 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
               ? 'Esta é uma conta de profissional. Escolha "Profissional" acima.'
               : 'Esta é uma conta de responsável. Escolha "Responsável" acima.';
           }
-          const c = r.dados.crianca;
+          let c = r.dados.crianca;
+          const local = ref.current;
+          if (papel === 'responsavel' && !c && local.criancaPendente && local.crianca.nome) {
+            const criado = await nuvem.criarCrianca(
+              r.dados.userId,
+              { nome: local.crianca.nome, nascimento: nascimentoISO(local.crianca.nascimento), grau: local.crianca.grau, habitos: local.habitos },
+              local.profissional.status === 'convidado' ? local.profissional.email : undefined,
+            );
+            if (!criado.ok) return criado.erro;
+            c = { id: criado.dados, nome: local.crianca.nome, nascimento: nascimentoISO(local.crianca.nascimento), grau: local.crianca.grau, habitos: local.habitos, trilha: local.trilha, jogos_por_dia: local.jogosPorDia, niveis: {} };
+          }
           atualizar((s) => ({
+            criancaPendente: false,
             logado: true,
             perfil: papel,
             emailConta: email,
@@ -354,7 +368,22 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
             emailProfissional: d.emailProfissional.trim() || undefined,
           });
           if (!r.ok) return r.erro;
-          if (r.dados.precisaConfirmar) return 'Conta criada! Confirme o e-mail que enviamos e depois entre pelo login.';
+          if (r.dados.precisaConfirmar) {
+            // Sem sessão ainda: guarda a criança neste celular e cria na nuvem no primeiro login.
+            setE((s) => ({
+              ...s,
+              logado: false,
+              perfil: 'responsavel',
+              emailConta: d.email.trim(),
+              nomeResponsavel: d.nomeResponsavel.trim(),
+              crianca: { idNuvem: '', nome: d.nomeCrianca.trim(), nascimento: d.nascimento, grau: d.grau },
+              criancaPendente: true,
+              profissional: d.emailProfissional.trim()
+                ? { status: 'convidado', nome: '', email: d.emailProfissional.trim(), codigo: '' }
+                : inicial.profissional,
+            }));
+            return 'Conta criada! Abra o e-mail que enviamos e toque no link de confirmação (a página que abre depois pode dar erro, tudo bem). Depois entre pelo login.';
+          }
           idNuvem = r.dados.criancaId;
         } else {
           await SENHA_LOCAL.salvar(d.senha);
