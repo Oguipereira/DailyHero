@@ -59,6 +59,13 @@ O status de cada módulo (bem / em evolução / precisa reforço) compara **a cr
 - Os relatórios usam **% de acertos de primeira** e comparam a criança só com ela mesma.
 - Alerta de reforço quando um módulo cai 15 pontos ou mais nos últimos 3 dias.
 
+## Preciso de pausa (15/10)
+
+- A pausa fica **dentro da lição**: um botão "pausa" sempre visível no topo, ao lado do progresso.
+- Abre a respiração guiada (o círculo cresce e diminui, 4 s cada) e volta exatamente de onde parou, sem perder nada.
+- É diferente do X de sair, que pede para segurar e serve para encerrar a lição.
+- No Início da família, o atalho virou "Relatório de hoje". O "Quero falar" continua lá, porque o pai usa com a criança fora do jogo.
+
 ## Em aberto
 
 - Planta definitiva da casa.
