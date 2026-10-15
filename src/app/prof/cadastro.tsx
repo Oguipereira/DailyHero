@@ -70,7 +70,19 @@ export default function CadastroProfissional() {
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <Botao variante="secundario" titulo="Voltar" onPress={() => setEtapa(1)} />
             {aviso ? (
-              <Botao titulo="Ir para o login" estilo={{ flex: 1 }} onPress={() => router.replace('/login')} />
+              <Botao
+                titulo={enviando ? 'Entrando…' : 'Já confirmei, entrar'}
+                desativado={enviando}
+                estilo={{ flex: 1 }}
+                onPress={async () => {
+                  setEnviando(true);
+                  const e = await app.entrarComConta(d.email, d.senha, 'profissional');
+                  setEnviando(false);
+                  if (e) return setErro(/confirm/i.test(e) ? 'O e-mail ainda não foi confirmado. Toque no link que enviamos e tente de novo.' : e);
+                  if (router.canDismiss()) router.dismissAll();
+                  router.replace('/prof/painel');
+                }}
+              />
             ) : (
               <Botao titulo={enviando ? 'Criando…' : 'Criar conta'} desativado={!aceite || enviando} estilo={{ flex: 1 }} onPress={criar} />
             )}

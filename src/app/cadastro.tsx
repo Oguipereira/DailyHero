@@ -37,6 +37,16 @@ export default function Cadastro() {
   const [enviando, setEnviando] = useState(false);
   const campo = (k: keyof typeof d) => ({ value: d[k], onChangeText: (v: string) => setD((x) => ({ ...x, [k]: v })) });
 
+  // Depois de tocar no link do e-mail: entra direto, sem digitar a senha de novo.
+  async function entrarDepoisDeConfirmar() {
+    setEnviando(true);
+    const e = await app.entrarComConta(d.email, d.senha, 'responsavel');
+    setEnviando(false);
+    if (e) return setErro(/confirm/i.test(e) ? 'O e-mail ainda não foi confirmado. Toque no link que enviamos e tente de novo.' : e);
+    setErro('');
+    router.replace({ pathname: '/pin-novo', params: { origem: 'cadastro' } });
+  }
+
   async function enviar() {
     setEnviando(true);
     const e = await app.cadastrarFamilia({ ...d, grau });
@@ -54,7 +64,7 @@ export default function Cadastro() {
       fundo="#FFFFFF"
       rodape={
         aviso ? (
-          <Botao titulo="Ir para o login" onPress={() => router.replace('/login')} />
+          <Botao titulo={enviando ? 'Entrando…' : 'Já confirmei, entrar'} desativado={enviando} onPress={entrarDepoisDeConfirmar} />
         ) : (
           <Botao titulo={enviando ? 'Enviando…' : 'Enviar dados'} desativado={enviando} onPress={enviar} />
         )

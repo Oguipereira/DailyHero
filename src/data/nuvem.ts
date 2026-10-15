@@ -2,6 +2,7 @@ import 'react-native-url-polyfill/auto';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import * as Linking from 'expo-linking';
 import { Platform } from 'react-native';
 
 /**
@@ -31,6 +32,13 @@ export const supabase: SupabaseClient | null =
     : null;
 
 export const nuvemAtiva = supabase !== null;
+
+/**
+ * Para onde o link de confirmação do e-mail leva: direto para o app, na tela "E-mail confirmado".
+ * No Expo Go vira exp://…/--/confirmado; no app instalado, dailyhero://confirmado.
+ * O endereço precisa estar liberado no Supabase (Authentication › URL Configuration › Redirect URLs).
+ */
+const voltaParaOApp = () => Linking.createURL('/confirmado');
 
 export type Resultado<T = undefined> = { ok: true; dados: T } | { ok: false; erro: string };
 
@@ -78,7 +86,7 @@ export async function cadastrarFamilia(p: {
     const { data, error } = await supabase.auth.signUp({
       email: p.email,
       password: p.senha,
-      options: { data: { papel: 'responsavel', nome: p.nome } },
+      options: { data: { papel: 'responsavel', nome: p.nome }, emailRedirectTo: voltaParaOApp() },
     });
     if (error) throw error;
     // Se o projeto pede confirmação de e-mail, ainda não há sessão: a criança é criada no primeiro login.
@@ -121,7 +129,7 @@ export async function cadastrarProfissional(p: {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: senha,
-      options: { data: { papel: 'profissional', ...meta } },
+      options: { data: { papel: 'profissional', ...meta }, emailRedirectTo: voltaParaOApp() },
     });
     if (error) throw error;
     return ok({ precisaConfirmar: !data.session });
