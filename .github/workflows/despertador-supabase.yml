@@ -1,0 +1,34 @@
+# Despertador do Supabase
+# O plano grátis do Supabase pausa o projeto depois de 7 dias sem uso.
+# Este robô faz uma consulta pequena no banco a cada 3 dias, para ele continuar acordado.
+# Precisa de dois segredos no GitHub (Settings › Secrets and variables › Actions):
+#   SUPABASE_URL              ex.: https://xxxx.supabase.co
+#   SUPABASE_PUBLISHABLE_KEY  a chave pública (sb_publishable_...), a mesma do .env do app
+name: Despertador do Supabase
+
+on:
+  schedule:
+    - cron: '17 12 */3 * *' # a cada 3 dias, 9h17 de Brasília
+  workflow_dispatch: # botão "Run workflow" para rodar na hora
+
+jobs:
+  acordar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consultar o banco
+        env:
+          URL: ${{ secrets.SUPABASE_URL }}
+          CHAVE: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$CHAVE" ]; then
+            echo "Faltam os segredos SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY."; exit 1
+          fi
+          codigo=$(curl -s -o resposta.json -w "%{http_code}" \
+            "$URL/rest/v1/perfis?select=id&limit=1" \
+            -H "apikey: $CHAVE")
+          echo "Resposta do Supabase: HTTP $codigo"
+          # 200 = banco respondeu (a lista vem vazia porque o robô não está logado, e tudo bem)
+          if [ "$codigo" != "200" ]; then
+            cat resposta.json; echo; echo "O banco não respondeu. Ele pode estar pausado: entre no supabase.com e reative."; exit 1
+          fi
